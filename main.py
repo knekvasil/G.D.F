@@ -1,5 +1,6 @@
 # main.py
 import time
+import json
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
@@ -11,12 +12,13 @@ if __name__ == '__main__':
 
     time.sleep(2)
 
-    driver.find_element_by_id("firm-input").send_keys("602")
+    driver.find_element_by_id("firm-input").send_keys("")  # CRD entry
     driver.find_element_by_class_name("md-ink-ripple").click()
 
     time.sleep(2)
 
     broker_dictionary = dict()
+    motivation_list = list()
     broker_name = str()
     max_page = int(driver.find_element_by_partial_link_text("page").text[5])
     current_page = 1
@@ -47,12 +49,12 @@ if __name__ == '__main__':
                                                                  "[@ng-bind='item.eventDate']").text[-4:])
                     if date_eval >= 2015:
                         broker_dictionary[broker_crd] = broker_name
-                        print(f"{broker_name} has a post-2015 disclosure!")
+                        motivation_list.append(f"{broker_name} has a post-2015 disclosure!")
                     else:
 
-                        print(f"{broker_name} only has pre-2015 disclosures.")
+                        motivation_list.append(f"{broker_name} only has pre-2015 disclosures.")
                 except NoSuchElementException:
-                    print(f"Limited information about {broker_name}.")
+                    motivation_list.append(f"Limited information about {broker_name}.")
 
                 time.sleep(2)
                 driver.close()
@@ -60,16 +62,15 @@ if __name__ == '__main__':
 
                 time.sleep(1)
             except NoSuchElementException:
-                print(f"{broker_name} does not have any disclosures.")
+                motivation_list.append(f"{broker_name} does not have any disclosures.")
 
         time.sleep(1)
         driver.find_element_by_partial_link_text("›").click()
         current_page += 1
 
         time.sleep(2)
-    print("\nBrokers with a post-2014 disclosure include:")
-    for key in broker_dictionary.keys():
-        print(f"{broker_dictionary[key]}: CRD#{key}")
+
+    json_results = json.dumps(broker_dictionary, indent=4)
 
     time.sleep(1)
     driver.quit()
